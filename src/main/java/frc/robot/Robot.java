@@ -14,8 +14,6 @@ public class Robot extends TimedRobot {
   final double bkP = -0.008;
      final double bkI = -0.005;
      final double bkD = -0.001;
-    // final double bkI = -0.00;
-    // final double bkD = -0.00;
     final double biLimit = 3;
     double setpoint = 0;
     double errorSum = 0;
@@ -27,58 +25,15 @@ public class Robot extends TimedRobot {
     double errorRate=0;
     public final Timer wait = new Timer();
 
-
-    private static final String kDefaultSpeed = "Demo";
-        private static final String kCompetitionSpeed = "Competition";
-        private String speed_selected;
-        private final SendableChooser<String> speed_chooser = new SendableChooser<>();
-
-
-    //limelight readings
-    private double tv = 0.0;
-    private double tx = 0.0;
-    private double ty = 0.0;
-    private double ta = 0.0;
-    private double distanceToTarget = -1.0;  //distance to target in inches, -1.0 means no target in sight
-    private boolean autoTargeting = false;
-    private boolean targetSighted = false;
-    private boolean targetInRange = false;
-    private boolean targetAimed = false;
-    private boolean targetLocked = false;
-    private boolean floppywrist = false;
-    
-    //These need to be set to the height of the limelight, the angle of the limelight, and the height of the target
-    static final double limelightHeight = 7.5;  // measure in inches to center of lens
-    static final double limelightAngle = 25.0;    // measure in degrees leaned back from vertical
-    static final double targetHeight = 42;     // measure in inches
-    static final double aimAdjust = -0.1;
-    static final double distanceAdjust = -0.1;
-    static final double min_aim_command = 0.05;
-    static final double MinTargetRange = 36.0;  // no closer than 10 feet
-    static final double MaxTargetRange = 40.0;  // no farther than 11 feet
-    
-    // the following values are used to compute a drive speed relative to the distance away from the target, the closer we get the slower we want to go
-    public double MaxDriveSpeed = 0.3;  // this is the max speed we want a drive motor to run at
-    static final double MinDriveSpeed = 0.1;  // this is the min speed we want a drive motor to run at
-    static final double MaxDriveDistance = 144.0;  // this is the distance where we want the drive motors to be at max speed
-    static final double MinDriveDistance = 1.0;  // this is the distance where we want the drive motors to be at min speed
-
-
-    // the following values are used to compute a turning speed relative to the degrees we are offset from the target, the more in line we get the slower we want to turn
-    static final double MaxTurnSpeed = 0.1;  // this is the max speed we want a drive motor to run at
-    static final double MinTurnSpeed = 0.0;  // this is the min speed we want a drive motor to run at
-    static final double MaxTurnDegrees = 27.0;  // this is the distance where we want the drive motors to be at max speed
-    static final double MinTurnDegrees = 1.0;  // this is the distance where we want the drive motors to be at min speed
-    
-    public double TargetCenter = (MaxTargetRange + MinTargetRange)/2.0;    // the center of the target range
-
-
-
-
-
-
-
-
+    final double tkP = -0.008;
+     final double tkI = -0.005;
+     final double tkD = -0.001;
+    final double tiLimit = 3;
+    double tsetpoint = 0;
+    double terrorSum = 0;
+    double tlastError = 0;
+    double terror=0;
+    double terrorRate=0;
 
      double akP = 0.25;
     final double akI = 0.4;
@@ -92,17 +47,26 @@ public class Robot extends TimedRobot {
 
   private double doutputSpeed;
 
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
+  private static final String kauto3 = "Auto 3";
+  private static final String kauto2 = "Auto 2";
+  private static final String kauto1 = "Auto 1";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-
+  private boolean start;
   private boolean placed ;
   private boolean waited;
   private boolean waited2;
   private boolean try_balancing;
   private boolean taxied;
   private boolean place2= false;
+  private boolean floppywrist = false;
+  private boolean turn1ready = false;
+  private boolean pickupready = false;
+  private boolean pickedup = false;
+  private boolean goback = false;
+  private boolean turnback = false;
+  private boolean preparestart = false;
+
     int timer;
     
     public double speedMult;
@@ -131,27 +95,14 @@ public class Robot extends TimedRobot {
 
    private color_sensor color_sensor;
 
-   private Auto1 auto1;
-
-   //private Auto2_balance auto2_balance;
-
-   private Auto3 auto3;
-
-  //  private final double kDriveTick2Feet = 1.0 / 128 * 6 * Math.PI / 12;
-
-   
-
     @Override
   public void robotInit() {
-    
-    speed_chooser.setDefaultOption("DemoSpeed", kDefaultSpeed);
-    speed_chooser.addOption("Competition Speed", kCompetitionSpeed);
-    SmartDashboard.putData("Speed choices", speed_chooser);
     place2 = false;
     placed = false;
     speedMult = .7;
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
+    m_chooser.setDefaultOption("auto 2", kauto2);
+    m_chooser.addOption("auto1",kauto1);
+    m_chooser.addOption("auto 3", kauto3);
     SmartDashboard.putData("Auto choices", m_chooser);
      // This creates our drivetrain subsystem that contains all the motors and motor control code
      
@@ -212,7 +163,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
-     m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    //m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
     drivetrain.m_gyro.reset();
     m_timer.reset();
@@ -224,32 +175,38 @@ public class Robot extends TimedRobot {
     waited2=false;
     onchargestation=false;
     try_balancing=false;
+    turn1ready=false;
     dsetpoint=0;
+    start=true;
     
   }
 
 
   @Override
   public void autonomousPeriodic() {
-    DataLogManager.start();
+    double dt = Timer.getFPGATimestamp() - lastTimestamp;
     
     switch (m_autoSelected) {
-        case kCustomAuto:
+        case kauto1:
         // put in code here
           break;
         
         
-          case kDefaultAuto:
+          case kauto2:
           default:
           SmartDashboard.getBoolean("wait",waited);
-          double dt = Timer.getFPGATimestamp() - lastTimestamp;
+          
           
           if (try_balancing==false){
             // Hand.hsetpoint=-20;
            // pneumatics.mdoubleSolenoid.set(DoubleSolenoid.Value.kForward);
+           if(start==true) {
             elbow.Esetpoint=-39.071121;
             shoulder.Ssetpoint = 150.377;
             elbow.EkP=0.05;
+            start=false;
+            dsetpoint=0;
+          }
            // calculations
            double derror = dsetpoint - dsensorPosition;
            if (Math.abs(derror) < aiLimit) {
@@ -378,10 +335,138 @@ public class Robot extends TimedRobot {
               // drivetrain.mywatchdog();
 
         break;
+     
+     
+     
+        case kauto3:
       
+           if (start==true){
+            elbow.Esetpoint=-39.071121;
+            shoulder.Ssetpoint = 150.377;
+            elbow.EkP=0.05;
+            start=false;
+            dsetpoint=0;
+           }
+           // calculations
+           double derror = dsetpoint - dsensorPosition;
+           if (Math.abs(derror) < aiLimit) {
+            derrorSum += derror * dt;
+           }
+   
+           double derrorRate = (derror - dlastError) / dt;
+   
+            doutputSpeed = (akP * derror + akI * derrorSum + akD * derrorRate);
+          
+           // update last- variables
+           lastTimestamp = Timer.getFPGATimestamp();
+           dlastError = derror;
+           
+           if (((Math.abs(dsetpoint-dsensorPosition))<.05)){
+             placed=true;
+             doutputSpeed =0;
+            
+            }
+            
+          if (placed == true && elbow.Elbowencoder.getPosition()<-30){
+             wrist.Wsetpoint=-20;
+            placed=false;
+            place2=true;
+          }
+
+          if (wrist.wriste.getPosition() < -13 && place2==true ){
+            waited=true;
+            place2=false;
+           
+          }
+          if (waited==true){
+            Hand.hsetpoint = 0;
+            pneumatics.mdoubleSolenoid.set(DoubleSolenoid.Value.kReverse);
+          }
+          if (waited==true && Hand.hande.getPosition()> -3 ){
+            wrist.Wsetpoint=0;
+            waited=false;
+            akP=.15;
+            dsetpoint=2;
+            waited2=true;
+          }
+          if (waited2==true && dsensorPosition>.4 && dsensorPosition<.5){
+            akP=.3;
+          }
+          if (waited2==true && dsensorPosition > .6){
+          dsetpoint = 2;
+          elbow.EkP=0.01;
+          elbow.Esetpoint = 0;
+          shoulder.Ssetpoint=0;
+          }
+        if (waited2==true && Math.abs(dsensorPosition-dsetpoint)<.1 && floppywrist==false){
+          taxied=true;
+          waited2=false;
+          floppywrist=true;
+        }
+        if (taxied==true &&Math.abs(dsensorPosition-dsetpoint)<.1){
+         turn1ready=true;
+        }
+        if (turn1ready==true){
+          Double tsensorPosition = drivetrain.m_gyro.getAngle();
+    
+            // calculations
+           double terror = tsetpoint-tsensorPosition;
+            if (Math.abs(terror) < tiLimit) {
+           terrorSum += terror * dt;
+            }
+    
+            double terrorRate = (terror - tlastError) / dt;
+    
+            Double turn = tkP * terror + tkI * terrorSum + tkD * terrorRate;
+    
+    
+            // update last- variables
+            lastTimestamp = Timer.getFPGATimestamp();
+            tlastError = terror;
+            drivetrain.tdrive(-turn+doutputSpeed,turn+doutputSpeed,false);
+            if (turn1ready==true){
+              tsetpoint=90;
+              turn1ready=false;
+              
+            }
+            if (tsensorPosition<95 && tsensorPosition>85){
+              dsetpoint=3;
+              pickedup=true;
+              
+            }
+             if (pickedup==true & dsensorPosition <3.1 && dsensorPosition >2.9){
+              pneumatics.mdoubleSolenoid.set(DoubleSolenoid.Value.kForward);
+              Hand.hsetpoint=-20;
+              pickedup=false;
+              pickupready=true;
+             }
+             if(pickupready==true && Hand.hande.getPosition()< -5 ){
+              wrist.Wsetpoint=5;
+              pickupready=false;
+              goback = true;
+             }
+             if (goback==true){
+              dsetpoint=2;
+              goback=false;
+              turnback = true;
+             }
+             if (turnback==true && dsensorPosition<2.01 && dsensorPosition >1.99){
+              tsetpoint=0;
+              turnback=false;
+              preparestart=true;
+              
+             }
+             if (tsensorPosition<3 && tsensorPosition>-3 && preparestart==true){
+              start=true;
+              preparestart=false;
+             }
+
+        }
+      break;
     
     }
   }
+
 
 
 
@@ -393,61 +478,9 @@ drivetrain.setbrake(true);
 
 @Override
   public void teleopPeriodic() {
-    DataLogManager.start();
-    
-    //drivetrain.setbrake(false);
-    speed_selected = speed_chooser.getSelected();
-                SmartDashboard.putString("Speed Chosen", speed_selected);
-
-
-                if (speed_selected == kDefaultSpeed) {
-                        MaxDriveSpeed = 0.3;
-                        speedMult = .4;
-                } else {
-                        MaxDriveSpeed = 0.6;
-                        speedMult= .6;
-                }
-
-
-                Update_Limelight_Tracking();
-
-
-                if (autoTargeting){
-                        SmartDashboard.putString("autotargeting", "true");
-                }else {
-                        SmartDashboard.putString("autotargeting", "false");
-            }
-
-
-                if (targetSighted){
-                        SmartDashboard.putString("targetSighted", "true");
-                }else {
-                        SmartDashboard.putString("targetSighted", "false");
-            }
-
-
-                if (targetAimed){
-                        SmartDashboard.putString("targetAimed", "true");
-                }else {
-                        SmartDashboard.putString("targetAimed", "false");
-            }
-
-
-                if (targetInRange){
-                        SmartDashboard.putString("targetInRange", "true");
-                }else {
-                        SmartDashboard.putString("targetInRange", "false");
-            }
-
-
-                if (targetLocked){
-                        SmartDashboard.putString("targetLocked", "true");
-                }else {
-                        SmartDashboard.putString("targetLocked", "false");
-            }
-    
-      
-      if (controller2.getXButton()){
+   
+		
+   if (controller2.getXButton()){
           setpoint = 0;
      
             // get sensor position
@@ -484,121 +517,16 @@ drivetrain.setbrake(true);
             }
           else if(left.getTrigger()){
             drivetrain.arcadeDrive(left.getY()*speedMult,right.getX()*speedMult, false);
-          }
-        else if (right.getTrigger()){
-          if (autoTargeting) {
-                  NetworkTableInstance.getDefault().getTable("limelight").getEntry("ledMode").setNumber(1);        // turns off the limelight        
-          } else {
-                  NetworkTableInstance.getDefault().getTable("limelight").getEntry("ledMode").setNumber(3);        // turns on the limelight        
-          }
-          autoTargeting = !autoTargeting;
-  } 
+           }
+           else {
+            drivetrain.tankDrive(right.getY() * speedMult, left.getY() * speedMult,false);
+            drivetrain.tankwatchdog(); 
+           }
+        
 
 
-  if (autoTargeting && !targetSighted) {  // no target in sight so rotate and look for one.  this means that you cannot operator drive if the robot is in autoTargeting mode
-          if (speed_selected == "Demo"){
-                 // drivetrain.tdrive(0.2,-0.2);
-          } else {
-                  //drivetrain.tdrive(0.3,-0.3);                                                
-          }
-          targetAimed = false;
-          targetInRange = false;
-          //targetLocked = false;
-          drivetrain.mywatchdog(); 
-  }
-
-
-  if (autoTargeting && targetSighted && !targetLocked) {  // drive closer to target
-          double distance_adjust = .35;
-          double heading_error = -tx;
-          double distance_error = -ty;
-          double steering_adjust_right; //= 0.05;
-          double steering_adjust_left; //= 0.05;
-          double left_command = 0.0;
-          double right_command = 0.0;
-          double distanceToTravel = 0.0;
-
-
-          targetAimed = false;
-          if (tx > 1.0) {
-                  //steering_adjust_left = 0.04;  //aimAdjust*heading_error - min_aim_command;
-                  //steering_adjust_left = ((0.3*heading_error/26.0) - (0.3/26.0))/2.0;  
-                  steering_adjust_left = ((MaxTurnSpeed - MinTurnSpeed) * (heading_error - MinTurnDegrees) / (MaxTurnDegrees - MinTurnDegrees)) + MinTurnSpeed; // adjust left drive motor based on the tx value
-                  steering_adjust_right = 0.0;
-          }
-          else if (tx < -1.0) {
-                  //steering_adjust_right = 0.04;  //aimAdjust*heading_error + min_aim_command;
-                  steering_adjust_left = 0.0;
-                  //steering_adjust_right = ((0.3 * heading_error / 26.0) - (0.3 / 26.0))/2.0;  
-                  steering_adjust_right = ((MaxTurnSpeed - MinTurnSpeed) * (heading_error - MinTurnDegrees) / (MaxTurnDegrees - MinTurnDegrees)) + MinTurnSpeed; // adjust right drive motor based on the tx value
-          } else {
-                  steering_adjust_right = 0.0;
-                  steering_adjust_left = 0.0;
-                  targetAimed = true;
-          }
-          //steering_adjust = 0.0;
-          
-          //targetAimed = true;
-          //targetInRange = false;
-          
-          distanceToTravel = Math.abs(distanceToTarget - TargetCenter);
-          //distance_adjust = (0.4* distanceToTravel / 119.0) - (0.4 / 119.0) + 0.3;
-          distance_adjust = ((MaxDriveSpeed - MinDriveSpeed) * (distanceToTravel - MinDriveDistance) / (MaxDriveDistance - MinDriveDistance)) + MinDriveSpeed; // set motor drive speed based on our distance away from target
-          
-          if ((distanceToTarget >= MinTargetRange) && (distanceToTarget < MaxTargetRange)) {
-                  left_command = 0.0;
-                  right_command = 0.0;
-                  targetInRange = true;
-          } else if (distanceToTarget < MinTargetRange) {
-                  left_command = -steering_adjust_left - distance_adjust;
-                  right_command = steering_adjust_right - distance_adjust;
-          } else if (distanceToTarget >= MaxTargetRange) {
-                  left_command = -steering_adjust_left + distance_adjust;
-                  right_command = steering_adjust_right + distance_adjust;
-          }
-
-
-          SmartDashboard.putNumber("left_drive_speed", left_command);
-          SmartDashboard.putNumber("right_drive_speed", right_command);
-          SmartDashboard.putNumber("distanceToTravel", distanceToTravel);
-                                  
-          //targetLocked = false;
-          if ((targetAimed) && (targetInRange)) {
-                  targetLocked = true;
-                  drivetrain.tankDrive(0.0,0.0,true);
-                  autoTargeting = !autoTargeting;
-          }
-          else {
-            //drivetrain.mywatchdog();
-            //drivetrain.tdrive(left_command, right_command);
-                  //drivetrain.mywatchdog();
-          }
-  } 
-  else {
-    if (!autoTargeting || (autoTargeting && !targetSighted)) {
-      if (!autoTargeting) {  //if we are not auto-targeting, allow drive to work as normal
-              targetAimed = false;
-              targetInRange = false;
-              targetLocked = false;
-              drivetrain.tankDrive(right.getY() * speedMult, left.getY() * speedMult,false);
-              drivetrain.mywatchdog(); 
-  }
-}
-  }
   
-  if (autoTargeting && targetSighted && targetLocked) {
-          //uptake1.set(.5);
           
-          //autoTargeting = false;
-  }
-          
-            
-            
-      
-
-
-
-
 
           
       // // Hand controlled by left and right triggers
@@ -659,35 +587,5 @@ drivetrain.setbrake(true);
 
 
 
-
-public void Update_Limelight_Tracking() {
-  tv = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0);  // 0 or 1
-  tx = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);  // -27 to 27
-  ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);  // -20.5 to 20.5
-  ta = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);  // 0 to 100
-
-
-  SmartDashboard.putNumber("LimelightX", tx);
-  SmartDashboard.putNumber("LimelightY", ty);
-  SmartDashboard.putNumber("LimelightArea", ta);
-  SmartDashboard.putNumber("TargetSpotted", tv);
-
-
-  if (tv < 1.0) {
-          targetSighted = false;
-          distanceToTarget = -1.0;
-  } else {
-          targetSighted = true;        
-
-
-          //calculate distance to target
-          double angleToTargetAsRadians = (limelightAngle + ty) * (3.14159 / 180.0);  
-          distanceToTarget = (targetHeight - limelightHeight)/Math.tan(angleToTargetAsRadians);
-  }
-
-
-  SmartDashboard.putNumber("Distance", distanceToTarget);
-  return;
-}
 
 }
