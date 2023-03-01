@@ -11,9 +11,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 public class Robot extends TimedRobot {
+<<<<<<< HEAD
     final double bkP = -0.01;
     final double bkI = -0.01;
     final double bkD = -0.001;
+=======
+  final double bkP = -0.008;
+     final double bkI = -0.005;
+     final double bkD = -0.001;
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
     final double biLimit = 3;
     double setpoint = 0;
     double errorSum = 0;
@@ -25,6 +31,7 @@ public class Robot extends TimedRobot {
     double errorRate=0;
     public final Timer wait = new Timer();
 
+<<<<<<< HEAD
 
     private static final String kDefaultSpeed = "Demo";
     private static final String kCompetitionSpeed = "Competition";
@@ -38,6 +45,17 @@ public class Robot extends TimedRobot {
 
 
 
+=======
+    final double tkP = -0.008;
+     final double tkI = -0.005;
+     final double tkD = -0.001;
+    final double tiLimit = 3;
+    double tsetpoint = 0;
+    double terrorSum = 0;
+    double tlastError = 0;
+    double terror=0;
+    double terrorRate=0;
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
 
      double akP = 0.25;
     final double akI = 0.4;
@@ -51,6 +69,7 @@ public class Robot extends TimedRobot {
 
     private double doutputSpeed;
 
+<<<<<<< HEAD
     private static final String kDefaultAuto = "Default";
     private static final String kCustomAuto = "My Auto";
     private String m_autoSelected;
@@ -63,6 +82,28 @@ public class Robot extends TimedRobot {
     private boolean taxied;
     private boolean place2= false;
     
+=======
+  private static final String kauto3 = "Auto 3";
+  private static final String kauto2 = "Auto 2";
+  private static final String kauto1 = "Auto 1";
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private boolean start;
+  private boolean placed ;
+  private boolean waited;
+  private boolean waited2;
+  private boolean try_balancing;
+  private boolean taxied;
+  private boolean place2= false;
+  private boolean floppywrist = false;
+  private boolean turn1ready = false;
+  private boolean pickupready = false;
+  private boolean pickedup = false;
+  private boolean goback = false;
+  private boolean turnback = false;
+  private boolean preparestart = false;
+
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
     int timer;
     
     public double speedMult;
@@ -83,22 +124,25 @@ public class Robot extends TimedRobot {
 
     private Shoulder shoulder;
     
+<<<<<<< HEAD
     private Pneumatics pneumatics;
 
     private color_sensor color_sensor;
    
+=======
+   private Pneumatics pneumatics;
+
+   private color_sensor color_sensor;
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
 
     @Override
   public void robotInit() {
-    
-    speed_chooser.setDefaultOption("DemoSpeed", kDefaultSpeed);
-    speed_chooser.addOption("Competition Speed", kCompetitionSpeed);
-    SmartDashboard.putData("Speed choices", speed_chooser);
     place2 = false;
     placed = false;
     speedMult = .7;
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
+    m_chooser.setDefaultOption("auto 2", kauto2);
+    m_chooser.addOption("auto1",kauto1);
+    m_chooser.addOption("auto 3", kauto3);
     SmartDashboard.putData("Auto choices", m_chooser);
      // This creates our drivetrain subsystem that contains all the motors and motor control code
      
@@ -158,7 +202,11 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
+<<<<<<< HEAD
     m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+=======
+    //m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
     System.out.println("Auto selected: " + m_autoSelected);
 
     drivetrain.m_gyro.reset();
@@ -175,34 +223,56 @@ public class Robot extends TimedRobot {
     waited2=false;
     onchargestation=false;
     try_balancing=false;
+<<<<<<< HEAD
     
     dsetpoint=0;
     akP=.25;
 
     drivetrain.setbrake(true);
+=======
+    turn1ready=false;
+    dsetpoint=0;
+    start=true;
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
     
   }
 
 
   @Override
   public void autonomousPeriodic() {
+<<<<<<< HEAD
     
+=======
+    double dt = Timer.getFPGATimestamp() - lastTimestamp;
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
     
     switch (m_autoSelected) {
-        case kCustomAuto:
+        case kauto1:
         // put in code here
           break;
         
         
-          case kDefaultAuto:
+          case kauto2:
           default:
           SmartDashboard.getBoolean("wait",waited);
-          double dt = Timer.getFPGATimestamp() - lastTimestamp;
+          
           
           if (try_balancing==false){
+<<<<<<< HEAD
            elbow.Esetpoint=-39.071121;
            shoulder.Ssetpoint = 150.377;
            elbow.EkP=0.05;
+=======
+            // Hand.hsetpoint=-20;
+           // pneumatics.mdoubleSolenoid.set(DoubleSolenoid.Value.kForward);
+           if(start==true) {
+            elbow.Esetpoint=-39.071121;
+            shoulder.Ssetpoint = 150.377;
+            elbow.EkP=0.05;
+            start=false;
+            dsetpoint=0;
+          }
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
            // calculations
            double derror = dsetpoint - dsensorPosition;
 
@@ -336,10 +406,138 @@ public class Robot extends TimedRobot {
              
 
         break;
+     
+     
+     
+        case kauto3:
       
+           if (start==true){
+            elbow.Esetpoint=-39.071121;
+            shoulder.Ssetpoint = 150.377;
+            elbow.EkP=0.05;
+            start=false;
+            dsetpoint=0;
+           }
+           // calculations
+           double derror = dsetpoint - dsensorPosition;
+           if (Math.abs(derror) < aiLimit) {
+            derrorSum += derror * dt;
+           }
+   
+           double derrorRate = (derror - dlastError) / dt;
+   
+            doutputSpeed = (akP * derror + akI * derrorSum + akD * derrorRate);
+          
+           // update last- variables
+           lastTimestamp = Timer.getFPGATimestamp();
+           dlastError = derror;
+           
+           if (((Math.abs(dsetpoint-dsensorPosition))<.05)){
+             placed=true;
+             doutputSpeed =0;
+            
+            }
+            
+          if (placed == true && elbow.Elbowencoder.getPosition()<-30){
+             wrist.Wsetpoint=-20;
+            placed=false;
+            place2=true;
+          }
+
+          if (wrist.wriste.getPosition() < -13 && place2==true ){
+            waited=true;
+            place2=false;
+           
+          }
+          if (waited==true){
+            Hand.hsetpoint = 0;
+            pneumatics.mdoubleSolenoid.set(DoubleSolenoid.Value.kReverse);
+          }
+          if (waited==true && Hand.hande.getPosition()> -3 ){
+            wrist.Wsetpoint=0;
+            waited=false;
+            akP=.15;
+            dsetpoint=2;
+            waited2=true;
+          }
+          if (waited2==true && dsensorPosition>.4 && dsensorPosition<.5){
+            akP=.3;
+          }
+          if (waited2==true && dsensorPosition > .6){
+          dsetpoint = 2;
+          elbow.EkP=0.01;
+          elbow.Esetpoint = 0;
+          shoulder.Ssetpoint=0;
+          }
+        if (waited2==true && Math.abs(dsensorPosition-dsetpoint)<.1 && floppywrist==false){
+          taxied=true;
+          waited2=false;
+          floppywrist=true;
+        }
+        if (taxied==true &&Math.abs(dsensorPosition-dsetpoint)<.1){
+         turn1ready=true;
+        }
+        if (turn1ready==true){
+          Double tsensorPosition = drivetrain.m_gyro.getAngle();
+    
+            // calculations
+           double terror = tsetpoint-tsensorPosition;
+            if (Math.abs(terror) < tiLimit) {
+           terrorSum += terror * dt;
+            }
+    
+            double terrorRate = (terror - tlastError) / dt;
+    
+            Double turn = tkP * terror + tkI * terrorSum + tkD * terrorRate;
+    
+    
+            // update last- variables
+            lastTimestamp = Timer.getFPGATimestamp();
+            tlastError = terror;
+            drivetrain.tdrive(-turn+doutputSpeed,turn+doutputSpeed,false);
+            if (turn1ready==true){
+              tsetpoint=90;
+              turn1ready=false;
+              
+            }
+            if (tsensorPosition<95 && tsensorPosition>85){
+              dsetpoint=3;
+              pickedup=true;
+              
+            }
+             if (pickedup==true & dsensorPosition <3.1 && dsensorPosition >2.9){
+              pneumatics.mdoubleSolenoid.set(DoubleSolenoid.Value.kForward);
+              Hand.hsetpoint=-20;
+              pickedup=false;
+              pickupready=true;
+             }
+             if(pickupready==true && Hand.hande.getPosition()< -5 ){
+              wrist.Wsetpoint=5;
+              pickupready=false;
+              goback = true;
+             }
+             if (goback==true){
+              dsetpoint=2;
+              goback=false;
+              turnback = true;
+             }
+             if (turnback==true && dsensorPosition<2.01 && dsensorPosition >1.99){
+              tsetpoint=0;
+              turnback=false;
+              preparestart=true;
+              
+             }
+             if (tsensorPosition<3 && tsensorPosition>-3 && preparestart==true){
+              start=true;
+              preparestart=false;
+             }
+
+        }
+      break;
     
     }
   }
+
 
 
 
@@ -351,6 +549,7 @@ drivetrain.setbrake(true);
 
 @Override
   public void teleopPeriodic() {
+<<<<<<< HEAD
     // DataLogManager.start();
     
     //drivetrain.setbrake(false);
@@ -358,6 +557,11 @@ drivetrain.setbrake(true);
      SmartDashboard.putString("Speed Chosen", speed_selected);
 
       if (controller2.getRightStickButton()){
+=======
+   
+		
+   if (controller2.getXButton()){
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
           setpoint = 0;
      
           if (drivetrain.m_gyro.getYComplementaryAngle()<3 && drivetrain.m_gyro.getYComplementaryAngle()>-3){
@@ -404,6 +608,7 @@ drivetrain.setbrake(true);
               }
           else if(left.getTrigger()){
             drivetrain.arcadeDrive(left.getY()*speedMult,right.getX()*speedMult, false);
+<<<<<<< HEAD
             drivetrain.setbrake(true);
           }
           else {
@@ -416,6 +621,22 @@ drivetrain.setbrake(true);
    
       //Relese Hand
       if (controller2.getXButton()) {
+=======
+           }
+           else {
+            drivetrain.tankDrive(right.getY() * speedMult, left.getY() * speedMult,false);
+            drivetrain.tankwatchdog(); 
+           }
+        
+
+
+  
+          
+
+          
+      // // Hand controlled by left and right triggers
+      if (controller2.getPOV()==90) {
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
         Hand.hsetpoint = 0;
       pneumatics.mdoubleSolenoid.set(DoubleSolenoid.Value.kReverse);
       } 
@@ -477,4 +698,13 @@ drivetrain.setbrake(true);
 }
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+>>>>>>> f3875e76b41260b89cb7ceed590dfb9164ac2482
 }
