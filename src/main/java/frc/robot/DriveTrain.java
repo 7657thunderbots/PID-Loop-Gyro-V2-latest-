@@ -34,7 +34,7 @@ public class DriveTrain  {
   // The robot's drive
   private final DifferentialDrive m_drive;// = new DifferentialDrive(leftParent, rightParent);
 
-  private final DifferentialDrive tdrive;
+  // private final DifferentialDrive tdrive;
 
   // The gyro sensor
    public  ADIS16470_IMU m_gyro;// = new ADIS16470_IMU();
@@ -78,7 +78,7 @@ public class DriveTrain  {
     rightParent = new WPI_TalonFX(3);
     rightChild  = new WPI_TalonFX(2);
     m_drive     = new DifferentialDrive(leftParent, rightParent);
-    tdrive = new DifferentialDrive(leftParent,rightParent);
+    //tdrive = new DifferentialDrive(leftParent,rightParent);
     m_gyro      = new ADIS16470_IMU();
     
     // Configure Talon Motors
@@ -88,7 +88,7 @@ public class DriveTrain  {
     rightChild.configFactoryDefault();
 
     rightParent.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
-    // rightParent.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
+     rightParent.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
     rightParent.setNeutralMode(kBrakeDurNeutral);
 
     rightChild.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
@@ -98,7 +98,7 @@ public class DriveTrain  {
     leftParent.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
 
     leftParent.setInverted(true);
-    // leftParent.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
+     leftParent.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
     leftParent.setNeutralMode(kBrakeDurNeutral);
 
     leftChild.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
@@ -250,7 +250,7 @@ public void setbrake (boolean enable){
   }
 
   public void tdrive(double left, double right, boolean b){
-    tdrive.tankDrive(left, right, false);
+    m_drive.tankDrive(left, right, false);
   }
   
 
